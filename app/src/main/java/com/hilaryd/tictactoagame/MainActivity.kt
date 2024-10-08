@@ -18,14 +18,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -38,6 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hilaryd.tictactoagame.ui.theme.TicTacToaGameTheme
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,6 +92,28 @@ fun TTTScreen() {
 
 //    true for player moves,  false for AI move and null for no move
         Board(moves = moves, onTap = onTap)
+
+        if(!playerTurn.value){
+            CircularProgressIndicator(color = Color.Red, modifier = Modifier.padding(16.dp))
+
+            val coroutineScope = rememberCoroutineScope()
+
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                   kotlinx.coroutines.delay(1500L)
+
+                    while(true){
+                        val i = Random.nextInt(9)
+                        if (moves[i] == null){
+                            moves[i] = false
+                            playerTurn.value = true
+                            break
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
 }
@@ -137,7 +165,7 @@ fun Board(moves: List<Boolean?>, onTap: (Offset) -> Unit) {
             .aspectRatio(1f)
             .padding(32.dp)
             .background(Color.LightGray)
-            .pointerInput(Unit){
+            .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = onTap
                 )
