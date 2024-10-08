@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -45,6 +46,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
 import kotlin.random.Random
 
+enum class Win{
+    AI,
+    PLAYER,
+    DRAW
+}
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,17 +78,22 @@ fun TTTScreen() {
     }
 
     val moves = remember {
-        mutableStateListOf<Boolean?>(true, null, false, null, true, null, null, false, null)
+        mutableStateListOf<Boolean?>(null, null, null, null, null, null, null, null, null)
+    }
+
+    val win = remember {
+        mutableStateOf<Win?>(null)
     }
 
     val onTap: (Offset) -> Unit = {
-        if (playerTurn.value){
+        if (playerTurn.value && win.value == null){
             val x = (it.x / 333).toInt()
             val y = (it.x / 333).toInt()
             val position = y * 3 + x
             if (moves[position] == null){
                 moves[position] = true
                 playerTurn.value = false
+                win.value = ShowResult(moves)
             }
         }
     }
@@ -92,8 +105,8 @@ fun TTTScreen() {
 
 //    true for player moves,  false for AI move and null for no move
         Board(moves = moves, onTap = onTap)
-
-        if(!playerTurn.value){
+// AI player moves
+        if(!playerTurn.value && win.value == null){
             CircularProgressIndicator(color = Color.Red, modifier = Modifier.padding(16.dp))
 
             val coroutineScope = rememberCoroutineScope()
@@ -107,6 +120,7 @@ fun TTTScreen() {
                         if (moves[i] == null){
                             moves[i] = false
                             playerTurn.value = true
+                            win.value = ShowResult(moves)
                             break
                         }
                     }
@@ -114,7 +128,38 @@ fun TTTScreen() {
                 }
             }
         }
+
+        if(win.value != null){
+            when(win.value){
+                Win.PLAYER -> {
+                    Text(text = "Player Wins", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+                }
+                Win.AI -> {
+                    Text(text = "AI Wins", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+                }
+                Win.DRAW -> {
+                    Text(text = "Draw", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+                }
+                else -> {}
+            }
+
+            Button(onClick = {
+                playerTurn.value = true
+                win.value = null
+                for (i in 0..8){
+                    moves[i] = null
+                }
+            }) {
+
+                Text(text = "Restart", modifier = Modifier.padding(16.dp), fontSize = 24.sp)
+
+            }
+
+        }
     }
+
+
+
 
 }
 
@@ -246,6 +291,53 @@ fun showMoves(move: Boolean?) {
             colorFilter = ColorFilter.tint(Color.Blue)
         )
     }
+}
+
+
+fun ShowResult(resultList:List<Boolean?>) : Win?{
+    var win : Win? = null
+    if (
+        (resultList[0] == true && resultList[1] == true && resultList[2] == true)||
+        (resultList[3] == true && resultList[4] == true && resultList[5] == true)||
+        (resultList[6] == true && resultList[7] == true && resultList[8] == true)||
+        (resultList[0] == true && resultList[4] == true && resultList[8] == true)||
+        (resultList[2] == true && resultList[4] == true && resultList[6] == true)||
+        (resultList[0] == true && resultList[3] == true && resultList[6] == true)||
+        (resultList[1] == true && resultList[4] == true && resultList[7] == true)||
+        (resultList[2] == true && resultList[5] == true && resultList[8] == true)
+    )
+        win = Win.PLAYER
+
+   else if (
+        (resultList[0] == false && resultList[1] == false && resultList[2] == false)||
+        (resultList[3] == false && resultList[4] == false && resultList[5] == false)||
+        (resultList[6] == false && resultList[7] == false && resultList[8] == false)||
+        (resultList[0] == false && resultList[4] == false && resultList[8] == false)||
+        (resultList[2] == false && resultList[4] == false && resultList[6] == false)||
+        (resultList[0] == false && resultList[3] == false && resultList[6] == false)||
+        (resultList[1] == false && resultList[4] == false && resultList[7] == false)||
+        (resultList[2] == false && resultList[5] == false && resultList[8] == false)
+    )
+        win = Win.AI
+
+    else if (win == null){
+        var available = false
+        for (i in 0..8){
+            if (resultList[i] == null){
+                available = true
+            }
+        }
+        if (!available){
+            win = Win.DRAW
+        }
+        }
+
+    else{
+        win = Win.DRAW
+    }
+
+    return win
+
 }
 
 
