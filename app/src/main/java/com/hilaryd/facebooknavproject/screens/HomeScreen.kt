@@ -31,9 +31,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.catalin.fblikeapp.data.Dessert
 import com.catalin.fblikeapp.data.Fruit
+import com.hilaryd.facebooknavproject.destinations.Destinations
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, modifier: Modifier) {
     val deserts by remember {
         mutableStateOf(Dessert.getAllDesserts())
     }
@@ -45,7 +46,7 @@ fun HomeScreen(navController: NavController) {
     val pageSize = 5
     var currentPage = 0
 
-    LazyColumn(modifier = Modifier.background(Color(0xffeeeeee)).padding(top = 20.dp)) {
+    LazyColumn(modifier) {
         val desertSize = deserts.size
         while (desertSize > currentPage * pageSize) {
             val from = currentPage * pageSize
@@ -60,7 +61,9 @@ fun HomeScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(bottom = 8.dp)
                     .background(Color.White)
-                    .clickable { }
+                    .clickable {
+                        navController.navigate(Destinations.Detail.createRoute(it.id))
+                    }
                 ) {
                     Text(
                         text = it.title,
@@ -104,7 +107,9 @@ fun HomeScreen(navController: NavController) {
                                 .clip(
                                     RoundedCornerShape(4.dp)
                                 )
-                                .clickable { }
+                                .clickable {
+                                    navController.navigate(Destinations.Detail.createRoute(it.id))
+                                }
                         ) {
                             Image(
                                 painter = painterResource(id = it.resId),
