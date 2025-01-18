@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CalculatorAppTheme {
                 MyApp {
+
                 }
             }
         }
@@ -84,6 +85,14 @@ fun TopHeader(modifier: Modifier = Modifier, dataPerson: Double = 0.0) {
 @Preview
 @Composable
 fun MainContent(modifier: Modifier = Modifier) {
+    BillForm(){
+
+    }
+}
+
+
+@Composable
+fun BillForm(modifier: Modifier = Modifier, valueChange: (String) -> Unit = {}) {
     val totalBills = remember {
         mutableStateOf("")
     }
@@ -103,9 +112,12 @@ fun MainContent(modifier: Modifier = Modifier) {
             labelId = "Enter you bills",
             enabled = true,
             isSingleLine = true,
-            onAction = KeyboardActions { if (!validState) return@KeyboardActions keyboardController?.hide()!! }
+            onAction = KeyboardActions {
+                if (!validState) return@KeyboardActions
+                valueChange(totalBills.value.trim())
+                keyboardController?.hide()!!
+            }
         )
     }
 }
-
 
